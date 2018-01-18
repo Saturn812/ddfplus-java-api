@@ -108,4 +108,24 @@ public class Data27Trade extends AbstractMsgBaseMarket implements DdfMarketTrade
 		return QuoteType.TICK;
 	}
 
+	@Override
+	public String toString() {
+
+		StringBuilder text = new StringBuilder(128);
+
+		text.append(this.getMillisCST());
+		text.append(",");
+		text.append(_symbol);
+		text.append(",");
+		text.append(_day);
+		text.append(",");
+		text.append(_session);
+		text.append(",");
+		text.append(_tradePrice);
+		text.append(",");
+		text.append(_tradeSize);
+
+		return text.toString();
+	}
+
 }

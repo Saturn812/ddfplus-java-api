@@ -235,34 +235,15 @@ public class ServerListenExample implements ConnectionHandler {
 		FeedEvent fe = dataMaster.processMessage(ddfMessage);
 
 		if (fe != null) {
-			if (fe.isTimestamp()) {
-				log.info("< TS:" + fe.getTimestamp());
-			}
 			if (fe.isDdfMessage()) {
-				log.info("< DDF:" + fe.getDdfMessage());
-			}
-			if (fe.isQuote()) {
-				log.info("< " + fe.getQuote().toXMLNode().toXMLString());
-			}
-			if (fe.isBookQuote()) {
-				log.info("< BOOK:" + fe.getBook().toXMLNode().toXMLString());
-			}
-			if (fe.isMarketEvents()) {
-				for (MarketEvent me : fe.getMarketEvents()) {
-					log.info("< MARKET EVENT:" + me);
+				if (ddfMessage.getRecord() == '2' && ddfMessage.getSubRecord() == '7') {
+					log.info(ddfMessage.toString());
 				}
 			}
 		}
-
-		final long count = messageCount.getAndIncrement();
-
-		if (count % 10000 == 0) {
-			log.info("message count: ", count);
-		}
-
 	}
 
-	private static class ShutdownHook extends Thread {
+    private static class ShutdownHook extends Thread {
 
 		private ServerListenExample app;
 
