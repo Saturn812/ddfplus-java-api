@@ -20,7 +20,7 @@ import com.ddfplus.db.FeedEvent;
 import com.ddfplus.db.MarketEvent;
 import com.ddfplus.db.MasterType;
 import com.ddfplus.enums.ConnectionType;
-import com.ddfplus.messages.DdfMarketBase;
+import com.ddfplus.messages.DdfMarketTrade;
 import com.ddfplus.net.Connection;
 import com.ddfplus.net.ConnectionHandler;
 import com.ddfplus.service.feed.FeedService;
@@ -156,7 +156,7 @@ public class ServerListenExample implements ConnectionHandler {
             props.setProperty("password", MasterUserPassword);
 			dbConn = java.sql.DriverManager.getConnection(dbURL, props);
 
-			stmt = dbConn.prepareStatement("insert into messages (timestamp, symbol) values(?, ?)");
+			stmt = dbConn.prepareStatement("insert into messages (timestamp, record, sub_record, symbol, day, session, price, size) values(?, ?, ?, ?, ?, ?, ?, ?)");
         } catch(Exception ex) {
             //For convenience, handle all errors here.
             ex.printStackTrace();
@@ -265,7 +265,7 @@ public class ServerListenExample implements ConnectionHandler {
 		/*
 		 * Decode message
 		 */
-		DdfMarketBase ddfMessage = Codec.parseMessage(array);
+		DdfMarketTrade ddfMessage = (DdfMarketTrade)Codec.parseMessage(array);
 
 		/*
 		 * Process the message, will update internal cache and return client API
@@ -288,7 +288,13 @@ public class ServerListenExample implements ConnectionHandler {
 
 					try {
 						stmt.setTimestamp(1, new java.sql.Timestamp(ddfMessage.getMillisCST()));
-						stmt.setString(2, ddfMessage.getSymbol());
+						stmt.setString(2, String.valueOf(ddfMessage.getRecord()));
+						stmt.setString(3, String.valueOf(ddfMessage.getSubRecord()));
+						stmt.setString(4, ddfMessage.getSymbol());
+						stmt.setString(5, String.valueOf(ddfMessage.getDay()));
+						stmt.setString(6, String.valueOf(ddfMessage.getSession()));
+						stmt.setFloat(7, ddfMessage.getTradePrice());
+						stmt.setInt(8, ddfMessage.getTradeSize());
 						stmt.execute();
 					} catch(Exception ex) {
 						ex.printStackTrace();
