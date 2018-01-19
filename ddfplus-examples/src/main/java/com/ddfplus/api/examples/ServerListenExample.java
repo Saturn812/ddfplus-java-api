@@ -284,7 +284,7 @@ public class ServerListenExample implements ConnectionHandler {
 
 		if (fe != null) {
 			if (fe.isDdfMessage()) {
-				if (ddfMessage.getRecord() == '2' && ddfMessage.getSubRecord() == '7') {
+				if (ddfMessage.getRecord() == '2' && ddfMessage.getSubRecord() == '7' && ddfMessage.getMillisCST() != 0) {
 				    DdfMarketTrade ddfTradeMessage = (DdfMarketTrade)ddfMessage;
 
 					log.info(ddfMessage.toString());
