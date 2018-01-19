@@ -67,6 +67,9 @@ public class ServerListenExample implements ConnectionHandler {
     static final String MasterUsername = "barchart";
     static final String MasterUserPassword = "0mQTBXsGKkVpY8rxIdzEYYRciaf9w3IL";
 
+	static java.sql.Connection dbConn = null;
+	static java.sql.PreparedStatement stmt = null;
+
 	public static void main(String[] args) {
 
 		ConnectionType connType;
@@ -137,8 +140,6 @@ public class ServerListenExample implements ConnectionHandler {
 
 		server.start();
 
-		java.sql.Connection dbConn = null;
-		java.sql.Statement stmt = null;
         try{
             //Dynamically load driver at runtime.
             //Redshift JDBC 4.1 driver: com.amazon.redshift.jdbc41.Driver
@@ -155,48 +156,11 @@ public class ServerListenExample implements ConnectionHandler {
             props.setProperty("password", MasterUserPassword);
 			dbConn = java.sql.DriverManager.getConnection(dbURL, props);
 
-            //Try a simple query.
-            System.out.println("Listing system tables...");
-            stmt = dbConn.createStatement();
-            String sql;
-            sql = "select * from information_schema.tables;";
-			java.sql.ResultSet rs = stmt.executeQuery(sql);
-
-            //Get the data from the result set.
-            while(rs.next()){
-                //Retrieve two columns.
-                String catalog = rs.getString("table_catalog");
-                String name = rs.getString("table_name");
-
-                //Display values.
-                System.out.print("Catalog: " + catalog);
-                System.out.println(", Name: " + name);
-            }
-            rs.close();
-            stmt.close();
-			dbConn.close();
+			stmt = dbConn.prepareStatement("insert into messages (timestamp, symbol) values(?, ?)");
         } catch(Exception ex) {
             //For convenience, handle all errors here.
             ex.printStackTrace();
-        } finally {
-            //Finally block to close resources.
-            try{
-                if (stmt!=null) {
-                    stmt.close();
-                }
-            } catch(Exception ex) {
-            }
-
-            try {
-                if (dbConn != null) {
-					dbConn.close();
-                }
-            } catch(Exception ex) {
-                ex.printStackTrace();
-            }
         }
-
-        System.out.println("Finished connectivity test.");
     }
 
 	public static void printHelp() {
@@ -269,6 +233,24 @@ public class ServerListenExample implements ConnectionHandler {
 		if (connection != null) {
 			connection.stopDataStream();
 		}
+
+		if (dbConn != null) {
+			try{
+				if (dbConn != null) {
+					dbConn.close();
+				}
+			} catch(Exception ex) {
+			}
+		}
+
+		if (stmt != null) {
+			try{
+				if (dbConn != null) {
+					stmt.close();
+				}
+			} catch(Exception ex) {
+			}
+		}
 	}
 
 	// -------------- ConnectionHandler ----------------------------
@@ -303,6 +285,14 @@ public class ServerListenExample implements ConnectionHandler {
 			if (fe.isDdfMessage()) {
 				if (ddfMessage.getRecord() == '2' && ddfMessage.getSubRecord() == '7') {
 					log.info(ddfMessage.toString());
+
+					try {
+						stmt.setTimestamp(1, new java.sql.Timestamp(ddfMessage.getMillisCST()));
+						stmt.setString(2, ddfMessage.getSymbol());
+						stmt.execute();
+					} catch(Exception ex) {
+						ex.printStackTrace();
+					}
 				}
 			}
 		}
