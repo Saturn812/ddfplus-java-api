@@ -20,6 +20,7 @@ import com.ddfplus.db.FeedEvent;
 import com.ddfplus.db.MarketEvent;
 import com.ddfplus.db.MasterType;
 import com.ddfplus.enums.ConnectionType;
+import com.ddfplus.messages.DdfMarketBase;
 import com.ddfplus.messages.DdfMarketTrade;
 import com.ddfplus.net.Connection;
 import com.ddfplus.net.ConnectionHandler;
@@ -265,7 +266,7 @@ public class ServerListenExample implements ConnectionHandler {
 		/*
 		 * Decode message
 		 */
-		DdfMarketTrade ddfMessage = (DdfMarketTrade)Codec.parseMessage(array);
+		DdfMarketBase ddfMessage = Codec.parseMessage(array);
 
 		/*
 		 * Process the message, will update internal cache and return client API
@@ -284,17 +285,19 @@ public class ServerListenExample implements ConnectionHandler {
 		if (fe != null) {
 			if (fe.isDdfMessage()) {
 				if (ddfMessage.getRecord() == '2' && ddfMessage.getSubRecord() == '7') {
+				    DdfMarketTrade ddfTradeMessage = (DdfMarketTrade)ddfMessage;
+
 					log.info(ddfMessage.toString());
 
 					try {
-						stmt.setTimestamp(1, new java.sql.Timestamp(ddfMessage.getMillisCST()));
-						stmt.setString(2, String.valueOf(ddfMessage.getRecord()));
-						stmt.setString(3, String.valueOf(ddfMessage.getSubRecord()));
-						stmt.setString(4, ddfMessage.getSymbol());
-						stmt.setString(5, String.valueOf(ddfMessage.getDay()));
-						stmt.setString(6, String.valueOf(ddfMessage.getSession()));
-						stmt.setFloat(7, ddfMessage.getTradePrice());
-						stmt.setInt(8, ddfMessage.getTradeSize());
+						stmt.setTimestamp(1, new java.sql.Timestamp(ddfTradeMessage.getMillisCST()));
+						stmt.setString(2, String.valueOf(ddfTradeMessage.getRecord()));
+						stmt.setString(3, String.valueOf(ddfTradeMessage.getSubRecord()));
+						stmt.setString(4, ddfTradeMessage.getSymbol());
+						stmt.setString(5, String.valueOf(ddfTradeMessage.getDay()));
+						stmt.setString(6, String.valueOf(ddfTradeMessage.getSession()));
+						stmt.setFloat(7, ddfTradeMessage.getTradePrice());
+						stmt.setInt(8, ddfTradeMessage.getTradeSize());
 						stmt.execute();
 					} catch(Exception ex) {
 						ex.printStackTrace();
