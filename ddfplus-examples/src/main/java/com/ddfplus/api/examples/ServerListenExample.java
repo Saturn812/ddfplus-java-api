@@ -290,15 +290,17 @@ public class ServerListenExample implements ConnectionHandler {
 					log.info(ddfMessage.toString());
 
 					try {
-						stmt.setTimestamp(1, new java.sql.Timestamp(ddfTradeMessage.getMillisCST()));
-						stmt.setString(2, String.valueOf(ddfTradeMessage.getRecord()));
-						stmt.setString(3, String.valueOf(ddfTradeMessage.getSubRecord()));
-						stmt.setString(4, ddfTradeMessage.getSymbol());
-						stmt.setString(5, String.valueOf(ddfTradeMessage.getDay()));
-						stmt.setString(6, String.valueOf(ddfTradeMessage.getSession()));
-						stmt.setFloat(7, ddfTradeMessage.getTradePrice());
-						stmt.setInt(8, ddfTradeMessage.getTradeSize());
-						stmt.execute();
+						if (!stmt.isClosed()) {
+							stmt.setTimestamp(1, new java.sql.Timestamp(ddfTradeMessage.getMillisCST()));
+							stmt.setString(2, String.valueOf(ddfTradeMessage.getRecord()));
+							stmt.setString(3, String.valueOf(ddfTradeMessage.getSubRecord()));
+							stmt.setString(4, ddfTradeMessage.getSymbol());
+							stmt.setString(5, String.valueOf(ddfTradeMessage.getDay()));
+							stmt.setString(6, String.valueOf(ddfTradeMessage.getSession()));
+							stmt.setFloat(7, ddfTradeMessage.getTradePrice());
+							stmt.setInt(8, ddfTradeMessage.getTradeSize());
+							stmt.execute();
+						}
 					} catch(Exception ex) {
 						ex.printStackTrace();
 					}
