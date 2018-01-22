@@ -64,7 +64,7 @@ public class ServerListenExample implements ConnectionHandler {
 	private FeedService feedService;
 	private UserSettingsService userSettingsService = new UserSettingsServiceImpl();
 
-    static final String dbURL = "jdbc:redshift://barchart.cwe4c1dhsaay.eu-central-1.redshift.amazonaws.com:5439/messages";
+    static final String dbURL = "jdbc:redshift://barchart.czgrmnefw6qt.us-east-1.redshift.amazonaws.com:5439/messages";
     static final String MasterUsername = "barchart";
     static final String MasterUserPassword = "0mQTBXsGKkVpY8rxIdzEYYRciaf9w3IL";
 
