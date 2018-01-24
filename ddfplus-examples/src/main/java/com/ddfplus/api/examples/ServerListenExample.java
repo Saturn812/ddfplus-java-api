@@ -70,6 +70,7 @@ public class ServerListenExample implements ConnectionHandler {
 
 	static java.sql.Connection dbConn = null;
 	static java.sql.PreparedStatement stmt = null;
+	static boolean saveTicks = false;
 
 	public static void main(String[] args) {
 
@@ -130,6 +131,9 @@ public class ServerListenExample implements ConnectionHandler {
 				snapshotPassword = args[i + 1];
 				i++;
 			}
+			if (args[i].equals("--save-ticks")) {
+				saveTicks = true;
+			}
 		}
 
 		// If all of the inputs are good, start the server.
@@ -141,27 +145,29 @@ public class ServerListenExample implements ConnectionHandler {
 
 		server.start();
 
-        try{
-            //Dynamically load driver at runtime.
-            //Redshift JDBC 4.1 driver: com.amazon.redshift.jdbc41.Driver
-            //Redshift JDBC 4 driver: com.amazon.redshift.jdbc4.Driver
-            Class.forName("com.amazon.redshift.jdbc.Driver");
+		if (saveTicks) {
+			try {
+				//Dynamically load driver at runtime.
+				//Redshift JDBC 4.1 driver: com.amazon.redshift.jdbc41.Driver
+				//Redshift JDBC 4 driver: com.amazon.redshift.jdbc4.Driver
+				Class.forName("com.amazon.redshift.jdbc.Driver");
 
-            //Open a connection and define properties.
-            System.out.println("Connecting to database...");
-			Properties props = new Properties();
+				//Open a connection and define properties.
+				System.out.println("Connecting to database...");
+				Properties props = new Properties();
 
-            //Uncomment the following line if using a keystore.
-            //props.setProperty("ssl", "true");
-            props.setProperty("user", MasterUsername);
-            props.setProperty("password", MasterUserPassword);
-			dbConn = java.sql.DriverManager.getConnection(dbURL, props);
+				//Uncomment the following line if using a keystore.
+				//props.setProperty("ssl", "true");
+				props.setProperty("user", MasterUsername);
+				props.setProperty("password", MasterUserPassword);
+				dbConn = java.sql.DriverManager.getConnection(dbURL, props);
 
-			stmt = dbConn.prepareStatement("insert into messages (timestamp, record, sub_record, symbol, day, session, price, size) values(?, ?, ?, ?, ?, ?, ?, ?)");
-        } catch(Exception ex) {
-            //For convenience, handle all errors here.
-            ex.printStackTrace();
-        }
+				stmt = dbConn.prepareStatement("insert into messages (timestamp, record, sub_record, symbol, day, session, price, size) values(?, ?, ?, ?, ?, ?, ?, ?)");
+			} catch(Exception ex) {
+				//For convenience, handle all errors here.
+				ex.printStackTrace();
+			}
+		}
     }
 
 	public static void printHelp() {
@@ -290,7 +296,7 @@ public class ServerListenExample implements ConnectionHandler {
 					log.info(ddfMessage.toString());
 
 					try {
-						if (!stmt.isClosed()) {
+						if (saveTicks && !stmt.isClosed()) {
 							stmt.setTimestamp(1, new java.sql.Timestamp(ddfTradeMessage.getMillisCST()));
 							stmt.setString(2, String.valueOf(ddfTradeMessage.getRecord()));
 							stmt.setString(3, String.valueOf(ddfTradeMessage.getSubRecord()));
